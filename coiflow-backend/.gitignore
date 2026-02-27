@@ -19,9 +19,9 @@ Thumbs.db
 ### Data ###
 data/
 
-### Keys (dev keys are committed for convenience, prod keys are injected via env) ###
-# Uncomment below for production:
-# src/main/resources/keys/
+### Keys (never commit private keys) ###
+src/main/resources/keys/*.pem
+!src/main/resources/keys/generate-keys.sh
 
 ### Logs ###
 *.log

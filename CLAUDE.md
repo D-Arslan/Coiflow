@@ -2,7 +2,11 @@
 
 ## Projet
 SaaS de gestion de salon de coiffure : rendez-vous, caisse, commissions, multi-tenant.
-Inspiré du projet FIELDZ (D:\FIELDZ) — SaaS de réservation sportive.
+
+## Repository
+- **GitHub** : https://github.com/D-Arslan/Coiflow
+- **Branches** : `main` (stable), `dev` (développement actif)
+- Workflow : développer sur `dev`, merger dans `main` quand stable
 
 ## Structure
 ```
@@ -17,50 +21,55 @@ D:\Coiflow/
 ### Backend
 - **Java 17** + Spring Boot 3.4.1 + Maven
 - **H2** (dev, file-based dans `./data/`) / **PostgreSQL 16** (prod)
-- **Flyway** pour les migrations (`src/main/resources/db/migration/`)
+- **Flyway** pour les migrations (`src/main/resources/db/migration/`, V1 à V5)
 - **JWT RS256** (clés RSA dans `src/main/resources/keys/`) + **HttpOnly Cookies**
-- **MapStruct** + **Lombok** pour DTO mapping
+- **MapStruct** + **Lombok** (`@Slf4j`, `@RequiredArgsConstructor`) pour DTO mapping
 - **SpringDoc OpenAPI** → Swagger UI sur `/swagger-ui.html`
 - Package : `com.coiflow`
 
 ### Frontend
 - **React 18** + TypeScript + Vite
 - **Tailwind CSS** (via `@tailwindcss/vite`)
-- **TanStack Query** (server state) + **AuthContext** (auth state, pas de Zustand)
-- **React Router DOM v6** (routing par rôle)
+- **TanStack Query v5** (server state) + **AuthContext** (auth state, pas de Zustand)
+- **React Router DOM v6** (routing par rôle, future flags v7 activés)
+- **react-toastify** pour les notifications
 - **Axios** avec intercepteurs (auto-refresh 401, `withCredentials: true`)
 - Path alias : `@/` → `./src/`
-- Proxy dev : `/api` → `http://localhost:8080`
+- Proxy dev : `/api` → `http://localhost:8085`
 
 ## Architecture backend — Hybride layer + sous-modules
 ```
 com.coiflow/
 ├── config/              → CORS, OpenAPI
 ├── security/            → SecurityConfig, jwt/, TenantContextHolder, LoginRateLimiter
-├── controller/{module}/ → 1 controller par module
+├── controller/{module}/ → auth, salon, staff, catalog, client, appointment, transaction, commission, dashboard
 ├── service/{module}/    → 1 service par module
 ├── model/{module}/      → entités JPA groupées par domaine
 ├── model/enums/         → Role, AppointmentStatus, PaymentMethod, TransactionStatus
 ├── repository/{module}/ → Spring Data JPA repos
 ├── dto/{module}/        → Request/Response DTOs séparés
-├── mapper/              → MapStruct mappers
-├── exception/           → GlobalExceptionHandler + custom exceptions
+├── mapper/              → MapStruct mappers (SalonMapper)
+├── exception/           → GlobalExceptionHandler (@Slf4j) + BusinessException + ResourceNotFoundException
 └── util/
 ```
 
 ## Architecture frontend — Feature-based
 ```
 src/
-├── config/api.ts              → endpoints centralisés
-├── router/AppRouter.tsx       → routes + ProtectedRoute
-├── features/{role}/pages/     → pages par rôle (auth, admin, manager, barber)
-├── features/{role}/hooks/     → TanStack Query hooks par feature
-├── shared/api/axiosClient.ts  → Axios + intercepteurs
-├── shared/context/AuthContext  → user, role, isAuthenticated, authReady
-├── shared/components/         → ProtectedRoute, composants partagés
-├── shared/services/           → API services (AuthService, etc.)
-├── shared/types/              → interfaces TypeScript
-└── shared/utils/              → formatage dates, montants
+├── config/api.ts                     → endpoints centralisés
+├── router/AppRouter.tsx              → routes + ProtectedRoute
+├── features/auth/pages/              → LoginPage (redirect auto si déjà connecté)
+├── features/admin/pages/             → AdminLayout, SalonsPage
+├── features/admin/hooks/             → useSalons
+├── features/manager/pages/           → ManagerLayout, ManagerDashboard, AppointmentsPage, TransactionsPage, CommissionsPage, StaffPage, ServicesPage, ClientsPage
+├── features/manager/hooks/           → useAppointments, useTransactions, useCommissions, useDashboard, useStaff, useServices, useClients
+├── features/barber/pages/            → BarberLayout, MySchedule, MyCommissions
+├── shared/api/axiosClient.ts         → Axios + intercepteurs (refresh 401, guard /auth/)
+├── shared/context/AuthContext.tsx     → user, role, isAuthenticated, authReady
+├── shared/components/                → ProtectedRoute, DataTable, Modal, MainLayout, WeekCalendar
+├── shared/services/                  → AuthService, SalonService, StaffService, ServiceCatalogService, ClientService, AppointmentService, TransactionService, CommissionService, DashboardService
+├── shared/types/                     → auth, salon, staff, service, client, appointment, transaction, commission, dashboard
+└── shared/utils/                     → dateHelpers, formatters (DZD), errorMessage, useDebounce
 ```
 
 ## Modèle de données
@@ -92,7 +101,8 @@ transactions, payments, commissions, refresh_tokens
 ## Sécurité
 - JWT RS256 (access 15min + refresh 7j) en HttpOnly cookies
 - 2 filter chains : API (JWT stateless) + Public (Swagger, H2)
-- @PreAuthorize sur les méthodes de service
+- `/api/auth/me` : public (permitAll), retourne 204 si pas de session (évite bruit console)
+- @PreAuthorize sur les méthodes de service (`@EnableMethodSecurity` activé)
 - LoginRateLimiter : blocage après 3 échecs / 10 min
 - TenantContextHolder (ThreadLocal) pour isolation multi-tenant
 
@@ -102,14 +112,14 @@ transactions, payments, commissions, refresh_tokens
 ```bash
 cd D:/Coiflow/coiflow-backend
 mvn compile                    # compiler
-mvn spring-boot:run            # lancer (port 8080)
+mvn clean spring-boot:run      # lancer (port 8085)
 mvn test                       # tests
 ```
 
 ### Frontend
 ```bash
 cd D:/Coiflow/coiflow-web
-npm run dev                    # dev server (port 5173)
+npm run dev                    # dev server (port 3001)
 npm run build                  # build prod
 npx tsc --noEmit               # type check
 ```
@@ -124,13 +134,20 @@ npx tsc --noEmit               # type check
 - **Soft delete** : champ `active` (boolean), jamais de DELETE physique
 - **Optimistic locking** : @Version sur Transaction et Appointment
 - **TransactionStatus** : COMPLETED/VOIDED (pas de DELETE, traçabilité)
+- **Devise** : DZD (Dinar algérien), `currencyDisplay: 'code'` pour rendu stable
+- **Timezone** : `Africa/Algiers` pour les calculs "du jour" côté dashboard
+
+## Pièges connus
+- **Hibernate STI proxy** : `appointment.getBarber()` retourne un proxy `Utilisateur`, pas `Barber`. Utiliser `Hibernate.unproxy()` avant le cast.
+- **Admin sans salonId** : les endpoints tenant-scoped retournent 409 pour un admin (pas de salon). C'est voulu.
 
 ## Conventions
 - Backend : snake_case (BDD), camelCase (Java/JSON)
 - Frontend : camelCase partout, PascalCase pour composants
 - IDs : UUID v4 (String "36 chars")
 - Pas de sessionStorage/localStorage pour l'auth (HttpOnly cookies uniquement)
-- Auth bootstrap : GET /api/auth/me au boot de l'app
+- Auth bootstrap : GET /api/auth/me au boot de l'app (204 = pas de session)
+- Clés RSA dev commitées pour commodité, clés prod injectées via env
 
 ## État d'avancement
 
@@ -144,27 +161,35 @@ npx tsc --noEmit               # type check
 - [x] AuthController/Service (login, logout, refresh, /me)
 - [x] Frontend : AuthContext, axiosClient, ProtectedRoute, LoginPage
 - [x] 3 pages placeholder (Admin, Manager, Barber)
-- [x] Backend compile et démarre OK
-- [x] Frontend build OK (0 erreurs TS)
 
-### Sprint 2 — Gestion du salon (à faire)
-- [ ] CRUD Salon (admin)
-- [ ] CRUD Staff / Coiffeurs (manager)
-- [ ] CRUD Services / Prestations
-- [ ] CRUD Clients
-- [ ] Pages frontend avec DataTable
+### Sprint 2 — Gestion du salon ✅
+- [x] CRUD Salon (admin) — SalonController, SalonService, SalonMapper
+- [x] CRUD Staff / Coiffeurs (manager) — StaffController, StaffService
+- [x] CRUD Services / Prestations — ServiceController, ServiceCatalogService
+- [x] CRUD Clients — ClientController, ClientService
+- [x] Composants partagés : DataTable, Modal, MainLayout
+- [x] Pages frontend complètes avec recherche et modales
 
-### Sprint 3 — Coeur métier (à faire)
-- [ ] Module Rendez-vous (CRUD + statuts + anti double-booking)
-- [ ] Planning calendrier (vue semaine)
-- [ ] Module Transactions (encaissement + paiement mixte)
-- [ ] Calcul auto commissions
-- [ ] Page Point de Vente
+### Sprint 3 — Coeur métier ✅
+- [x] Module Rendez-vous (CRUD + statuts + anti double-booking)
+- [x] Planning calendrier WeekCalendar (vue semaine, 8h-20h, slots 30min)
+- [x] Module Transactions (encaissement + paiement mixte + validation stricte)
+- [x] Calcul auto commissions (TransactionService → Commission)
+- [x] Pages : AppointmentsPage, TransactionsPage, CommissionsPage
+- [x] Barber : MySchedule (lecture seule)
+- [x] Migrations V3 (contraintes uniques), V4 (refresh token), V5 (indexes)
 
-### Sprint 4 — Dashboard & Polish (à faire)
-- [ ] Dashboard manager (stats, graphiques)
-- [ ] Pages coiffeur (planning, commissions)
-- [ ] Tests (unitaires + intégration Testcontainers)
+### Sprint 4 — Dashboard & Polish ✅
+- [x] Dashboard manager : stats temps réel (CA jour, RDV, coiffeurs actifs) + tableau CA 7 jours
+- [x] Backend dashboard : DashboardController/Service avec @PreAuthorize
+- [x] Page barber "Mes commissions" avec filtres date et total
+- [x] Devise changée EUR → DZD (currencyDisplay: 'code')
+- [x] GlobalExceptionHandler production-ready (@Slf4j, message générique)
+- [x] Fix console : /api/auth/me retourne 204 (pas 403/401), React Router future flags
+- [x] LoginPage : redirect auto si déjà authentifié
 
-## Plan détaillé
-Voir : C:\Users\hp\.claude\plans\fuzzy-hugging-sutherland.md
+### Sprint 5 — À planifier
+- [ ] Tests (unitaires + intégration)
+- [ ] Configuration PostgreSQL production
+- [ ] Déploiement (Docker, CI/CD)
+- [ ] Fonctionnalités supplémentaires à définir
