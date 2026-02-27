@@ -1,0 +1,27 @@
+target/
+!.mvn/wrapper/maven-wrapper.jar
+!**/src/main/**/target/
+!**/src/test/**/target/
+
+### IDE ###
+.idea/
+*.iws
+*.iml
+*.ipr
+.vscode/
+*.swp
+*.swo
+
+### OS ###
+.DS_Store
+Thumbs.db
+
+### Data ###
+data/
+
+### Keys (dev keys are committed for convenience, prod keys are injected via env) ###
+# Uncomment below for production:
+# src/main/resources/keys/
+
+### Logs ###
+*.log
