@@ -24,44 +24,44 @@ export function DataTable<T>({
   if (isLoading) {
     return (
       <div className="flex justify-center py-12">
-        <div className="h-8 w-8 animate-spin rounded-full border-b-2 border-blue-600" />
+        <div className="h-8 w-8 animate-spin rounded-full border-b-2 border-amber-500" />
       </div>
     );
   }
 
   return (
-    <div className="overflow-x-auto rounded-lg border border-gray-200 bg-white shadow-sm">
-      <table className="min-w-full divide-y divide-gray-200">
-        <thead className="bg-gray-50">
+    <div className="overflow-x-auto rounded-lg border border-stone-200 bg-white shadow-sm">
+      <table className="min-w-full divide-y divide-stone-200">
+        <thead className="bg-stone-50">
           <tr>
             {columns.map((col) => (
               <th
                 key={String(col.header)}
-                className={`px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500 ${col.className ?? ''}`}
+                className={`px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-stone-500 ${col.className ?? ''}`}
               >
                 {col.header}
               </th>
             ))}
             {actions && (
-              <th className="px-6 py-3 text-right text-xs font-medium uppercase tracking-wider text-gray-500">
+              <th className="px-6 py-3 text-right text-xs font-medium uppercase tracking-wider text-stone-500">
                 Actions
               </th>
             )}
           </tr>
         </thead>
-        <tbody className="divide-y divide-gray-200">
+        <tbody className="divide-y divide-stone-200">
           {data.length === 0 ? (
             <tr>
               <td
                 colSpan={columns.length + (actions ? 1 : 0)}
-                className="px-6 py-8 text-center text-sm text-gray-500"
+                className="px-6 py-8 text-center text-sm text-stone-500"
               >
                 {emptyMessage}
               </td>
             </tr>
           ) : (
             data.map((row) => (
-              <tr key={keyExtractor(row)} className="hover:bg-gray-50">
+              <tr key={keyExtractor(row)} className="hover:bg-stone-50 transition-colors">
                 {columns.map((col) => {
                   const value =
                     typeof col.accessor === 'function'
@@ -70,7 +70,7 @@ export function DataTable<T>({
                   return (
                     <td
                       key={String(col.header)}
-                      className={`whitespace-nowrap px-6 py-4 text-sm text-gray-900 ${col.className ?? ''}`}
+                      className={`whitespace-nowrap px-6 py-4 text-sm text-stone-800 ${col.className ?? ''}`}
                     >
                       {value == null ? '\u2014' : String(value)}
                     </td>

@@ -53,25 +53,25 @@ export default function CommissionsPage() {
     <div className="space-y-6">
       {/* Header + Filters */}
       <div className="flex items-center justify-between">
-        <h2 className="text-xl font-semibold text-gray-900">Commissions</h2>
+        <h2 className="text-xl font-semibold text-stone-800">Commissions</h2>
         <div className="flex items-center gap-2">
           <input
             type="date"
             value={startDate}
             onChange={(e) => setStartDate(e.target.value)}
-            className="rounded-md border border-gray-300 px-3 py-1.5 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+            className="rounded-md border border-stone-300 px-3 py-1.5 text-sm focus:border-amber-500 focus:outline-none focus:ring-1 focus:ring-amber-500"
           />
-          <span className="text-sm text-gray-500">au</span>
+          <span className="text-sm text-stone-500">au</span>
           <input
             type="date"
             value={endDate}
             onChange={(e) => setEndDate(e.target.value)}
-            className="rounded-md border border-gray-300 px-3 py-1.5 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+            className="rounded-md border border-stone-300 px-3 py-1.5 text-sm focus:border-amber-500 focus:outline-none focus:ring-1 focus:ring-amber-500"
           />
           <select
             value={barberFilter}
             onChange={(e) => setBarberFilter(e.target.value)}
-            className="rounded-md border border-gray-300 px-3 py-1.5 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+            className="rounded-md border border-stone-300 px-3 py-1.5 text-sm focus:border-amber-500 focus:outline-none focus:ring-1 focus:ring-amber-500"
           >
             <option value="">Tous les coiffeurs</option>
             {staff.map((s) => (
@@ -88,15 +88,15 @@ export default function CommissionsPage() {
         <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
           {barberTotals.map((bt) => (
             <div key={bt.name} className="rounded-lg bg-white p-4 shadow">
-              <p className="text-sm font-medium text-gray-500">{bt.name}</p>
-              <p className="mt-1 text-lg font-semibold text-gray-900">{formatPrice(bt.total)}</p>
-              <p className="text-xs text-gray-400">{bt.count} transaction{bt.count > 1 ? 's' : ''}</p>
+              <p className="text-sm font-medium text-stone-500">{bt.name}</p>
+              <p className="mt-1 text-lg font-semibold text-stone-800">{formatPrice(bt.total)}</p>
+              <p className="text-xs text-stone-400">{bt.count} transaction{bt.count > 1 ? 's' : ''}</p>
             </div>
           ))}
-          <div className="rounded-lg bg-blue-50 p-4 shadow">
-            <p className="text-sm font-medium text-blue-600">Total general</p>
-            <p className="mt-1 text-lg font-semibold text-blue-900">{formatPrice(grandTotal)}</p>
-            <p className="text-xs text-blue-400">{commissions.length} commission{commissions.length > 1 ? 's' : ''}</p>
+          <div className="rounded-lg bg-amber-50 p-4 shadow">
+            <p className="text-sm font-medium text-amber-600">Total general</p>
+            <p className="mt-1 text-lg font-semibold text-amber-900">{formatPrice(grandTotal)}</p>
+            <p className="text-xs text-amber-500">{commissions.length} commission{commissions.length > 1 ? 's' : ''}</p>
           </div>
         </div>
       )}

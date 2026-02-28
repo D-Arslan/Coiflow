@@ -52,10 +52,10 @@ export default function ServicesPage() {
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <h2 className="text-xl font-semibold text-gray-900">Prestations</h2>
+        <h2 className="text-xl font-semibold text-stone-800">Prestations</h2>
         <button
           onClick={() => setIsCreateOpen(true)}
-          className="rounded-md bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700"
+          className="rounded-md bg-amber-600 px-4 py-2 text-sm font-medium text-white hover:bg-amber-700"
         >
           Nouvelle prestation
         </button>
@@ -71,7 +71,7 @@ export default function ServicesPage() {
           <div className="flex gap-2 justify-end">
             <button
               onClick={() => setEditingService(s)}
-              className="text-blue-600 hover:text-blue-800 text-sm font-medium"
+              className="text-amber-600 hover:text-amber-700 text-sm font-medium"
             >
               Modifier
             </button>
@@ -88,16 +88,16 @@ export default function ServicesPage() {
       {/* Create Modal */}
       <Modal isOpen={isCreateOpen} onClose={() => setIsCreateOpen(false)} title="Nouvelle prestation">
         <form onSubmit={handleCreate} className="space-y-4">
-          <input name="name" required placeholder="Nom de la prestation *" className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500" />
+          <input name="name" required placeholder="Nom de la prestation *" className="w-full rounded-md border border-stone-300 px-3 py-2 text-sm focus:border-amber-500 focus:outline-none focus:ring-1 focus:ring-amber-500" />
           <div className="grid grid-cols-2 gap-3">
-            <input name="durationMinutes" type="number" required min="5" max="480" placeholder="Duree (min) *" className="rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500" />
-            <input name="price" type="number" required min="0.01" step="0.01" placeholder="Prix (EUR) *" className="rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500" />
+            <input name="durationMinutes" type="number" required min="5" max="480" placeholder="Duree (min) *" className="rounded-md border border-stone-300 px-3 py-2 text-sm focus:border-amber-500 focus:outline-none focus:ring-1 focus:ring-amber-500" />
+            <input name="price" type="number" required min="0.01" step="0.01" placeholder="Prix (EUR) *" className="rounded-md border border-stone-300 px-3 py-2 text-sm focus:border-amber-500 focus:outline-none focus:ring-1 focus:ring-amber-500" />
           </div>
           <div className="flex justify-end gap-3 pt-2">
-            <button type="button" onClick={() => setIsCreateOpen(false)} className="rounded-md border border-gray-300 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50">
+            <button type="button" onClick={() => setIsCreateOpen(false)} className="rounded-md border border-stone-300 px-4 py-2 text-sm text-stone-700 hover:bg-stone-50">
               Annuler
             </button>
-            <button type="submit" disabled={createMutation.isPending} className="rounded-md bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 disabled:opacity-50">
+            <button type="submit" disabled={createMutation.isPending} className="rounded-md bg-amber-600 px-4 py-2 text-sm font-medium text-white hover:bg-amber-700 disabled:opacity-50">
               {createMutation.isPending ? 'Creation...' : 'Creer'}
             </button>
           </div>
@@ -108,16 +108,16 @@ export default function ServicesPage() {
       <Modal isOpen={editingService !== null} onClose={() => setEditingService(null)} title="Modifier la prestation">
         {editingService && (
           <form onSubmit={handleUpdate} className="space-y-4">
-            <input name="name" required defaultValue={editingService.name} placeholder="Nom *" className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500" />
+            <input name="name" required defaultValue={editingService.name} placeholder="Nom *" className="w-full rounded-md border border-stone-300 px-3 py-2 text-sm focus:border-amber-500 focus:outline-none focus:ring-1 focus:ring-amber-500" />
             <div className="grid grid-cols-2 gap-3">
-              <input name="durationMinutes" type="number" required min="5" max="480" defaultValue={editingService.durationMinutes} placeholder="Duree (min) *" className="rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500" />
-              <input name="price" type="number" required min="0.01" step="0.01" defaultValue={Number(editingService.price)} placeholder="Prix (EUR) *" className="rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500" />
+              <input name="durationMinutes" type="number" required min="5" max="480" defaultValue={editingService.durationMinutes} placeholder="Duree (min) *" className="rounded-md border border-stone-300 px-3 py-2 text-sm focus:border-amber-500 focus:outline-none focus:ring-1 focus:ring-amber-500" />
+              <input name="price" type="number" required min="0.01" step="0.01" defaultValue={Number(editingService.price)} placeholder="Prix (EUR) *" className="rounded-md border border-stone-300 px-3 py-2 text-sm focus:border-amber-500 focus:outline-none focus:ring-1 focus:ring-amber-500" />
             </div>
             <div className="flex justify-end gap-3 pt-2">
-              <button type="button" onClick={() => setEditingService(null)} className="rounded-md border border-gray-300 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50">
+              <button type="button" onClick={() => setEditingService(null)} className="rounded-md border border-stone-300 px-4 py-2 text-sm text-stone-700 hover:bg-stone-50">
                 Annuler
               </button>
-              <button type="submit" disabled={updateMutation.isPending} className="rounded-md bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 disabled:opacity-50">
+              <button type="submit" disabled={updateMutation.isPending} className="rounded-md bg-amber-600 px-4 py-2 text-sm font-medium text-white hover:bg-amber-700 disabled:opacity-50">
                 {updateMutation.isPending ? 'Sauvegarde...' : 'Sauvegarder'}
               </button>
             </div>

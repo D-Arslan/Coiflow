@@ -110,27 +110,27 @@ export default function TransactionsPage() {
     <div className="space-y-8">
       {/* Date range filter */}
       <div className="flex items-center justify-between">
-        <h2 className="text-xl font-semibold text-gray-900">Caisse & Transactions</h2>
+        <h2 className="text-xl font-semibold text-stone-800">Caisse & Transactions</h2>
         <div className="flex items-center gap-2">
           <input
             type="date"
             value={startDate}
             onChange={(e) => setStartDate(e.target.value)}
-            className="rounded-md border border-gray-300 px-3 py-1.5 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+            className="rounded-md border border-stone-300 px-3 py-1.5 text-sm focus:border-amber-500 focus:outline-none focus:ring-1 focus:ring-amber-500"
           />
-          <span className="text-sm text-gray-500">au</span>
+          <span className="text-sm text-stone-500">au</span>
           <input
             type="date"
             value={endDate}
             onChange={(e) => setEndDate(e.target.value)}
-            className="rounded-md border border-gray-300 px-3 py-1.5 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+            className="rounded-md border border-stone-300 px-3 py-1.5 text-sm focus:border-amber-500 focus:outline-none focus:ring-1 focus:ring-amber-500"
           />
         </div>
       </div>
 
       {/* Section: A encaisser */}
       <div className="space-y-3">
-        <h3 className="text-lg font-medium text-gray-800">A encaisser</h3>
+        <h3 className="text-lg font-medium text-stone-700">A encaisser</h3>
         <DataTable<Appointment>
           columns={toCashColumns}
           data={toCash}
@@ -150,7 +150,7 @@ export default function TransactionsPage() {
 
       {/* Section: Historique transactions */}
       <div className="space-y-3">
-        <h3 className="text-lg font-medium text-gray-800">Historique</h3>
+        <h3 className="text-lg font-medium text-stone-700">Historique</h3>
         <DataTable<Transaction>
           columns={txColumns}
           data={transactions}
@@ -169,7 +169,7 @@ export default function TransactionsPage() {
                 Annuler
               </button>
             ) : (
-              <span className="text-sm text-gray-400">Annulee</span>
+              <span className="text-sm text-stone-400">Annulee</span>
             )
           }
         />
@@ -184,7 +184,7 @@ export default function TransactionsPage() {
         {cashingAppointment && (
           <div className="space-y-4">
             {/* Recap */}
-            <div className="rounded-md bg-gray-50 p-3 text-sm">
+            <div className="rounded-md bg-stone-50 p-3 text-sm">
               <p><span className="font-medium">Coiffeur :</span> {cashingAppointment.barberName}</p>
               <p><span className="font-medium">Client :</span> {cashingAppointment.clientName ?? 'Sans client'}</p>
               <ul className="mt-2 space-y-0.5">
@@ -195,7 +195,7 @@ export default function TransactionsPage() {
                   </li>
                 ))}
               </ul>
-              <div className="mt-2 border-t border-gray-200 pt-2 font-semibold flex justify-between">
+              <div className="mt-2 border-t border-stone-200 pt-2 font-semibold flex justify-between">
                 <span>Total</span>
                 <span>{formatPrice(cashingAppointment.totalPrice)}</span>
               </div>
@@ -203,13 +203,13 @@ export default function TransactionsPage() {
 
             {/* Payment lines */}
             <div className="space-y-2">
-              <label className="block text-sm font-medium text-gray-700">Paiements</label>
+              <label className="block text-sm font-medium text-stone-700">Paiements</label>
               {paymentLines.map((line, i) => (
                 <div key={i} className="flex items-center gap-2">
                   <select
                     value={line.method}
                     onChange={(e) => updatePaymentLine(i, 'method', e.target.value)}
-                    className="rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                    className="rounded-md border border-stone-300 px-3 py-2 text-sm focus:border-amber-500 focus:outline-none focus:ring-1 focus:ring-amber-500"
                   >
                     {PAYMENT_METHODS.map((m) => (
                       <option key={m.value} value={m.value}>
@@ -224,7 +224,7 @@ export default function TransactionsPage() {
                     value={line.amount || ''}
                     onChange={(e) => updatePaymentLine(i, 'amount', e.target.value)}
                     placeholder="Montant"
-                    className="flex-1 rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                    className="flex-1 rounded-md border border-stone-300 px-3 py-2 text-sm focus:border-amber-500 focus:outline-none focus:ring-1 focus:ring-amber-500"
                   />
                   {paymentLines.length > 1 && (
                     <button
@@ -240,7 +240,7 @@ export default function TransactionsPage() {
               <button
                 type="button"
                 onClick={addPaymentLine}
-                className="text-sm text-blue-600 hover:text-blue-800 font-medium"
+                className="text-sm text-amber-600 hover:text-amber-700 font-medium"
               >
                 + Ajouter un moyen de paiement
               </button>
@@ -257,7 +257,7 @@ export default function TransactionsPage() {
               <button
                 type="button"
                 onClick={() => setCashingAppointment(null)}
-                className="rounded-md border border-gray-300 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
+                className="rounded-md border border-stone-300 px-4 py-2 text-sm text-stone-700 hover:bg-stone-50"
               >
                 Annuler
               </button>

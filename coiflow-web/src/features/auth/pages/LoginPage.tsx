@@ -1,5 +1,6 @@
 import { useState, useEffect, type FormEvent } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { Scissors } from 'lucide-react';
 import { useAuth } from '@/shared/context/AuthContext';
 import { AuthService } from '@/shared/services/AuthService';
 import type { Role } from '@/shared/types/auth';
@@ -48,11 +49,12 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-gray-50">
-      <div className="w-full max-w-md space-y-8 rounded-xl bg-white p-8 shadow-lg">
+    <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-stone-100 to-amber-50">
+      <div className="w-full max-w-md space-y-8 rounded-xl bg-white p-8 shadow-xl shadow-amber-100/50 border border-stone-200">
         <div className="text-center">
-          <h1 className="text-3xl font-bold text-gray-900">Coiflow</h1>
-          <p className="mt-2 text-sm text-gray-600">
+          <Scissors className="mx-auto h-10 w-10 text-amber-500" />
+          <h1 className="mt-3 text-3xl font-bold text-amber-600">Coiflow</h1>
+          <p className="mt-2 text-sm text-stone-500">
             Connectez-vous à votre espace
           </p>
         </div>
@@ -65,7 +67,7 @@ export default function LoginPage() {
           )}
 
           <div>
-            <label htmlFor="email" className="block text-sm font-medium text-gray-700">
+            <label htmlFor="email" className="block text-sm font-medium text-stone-700">
               Email
             </label>
             <input
@@ -74,13 +76,13 @@ export default function LoginPage() {
               required
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+              className="mt-1 block w-full rounded-md border border-stone-300 px-3 py-2 shadow-sm focus:border-amber-500 focus:outline-none focus:ring-1 focus:ring-amber-500"
               placeholder="email@exemple.com"
             />
           </div>
 
           <div>
-            <label htmlFor="password" className="block text-sm font-medium text-gray-700">
+            <label htmlFor="password" className="block text-sm font-medium text-stone-700">
               Mot de passe
             </label>
             <input
@@ -89,7 +91,7 @@ export default function LoginPage() {
               required
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+              className="mt-1 block w-full rounded-md border border-stone-300 px-3 py-2 shadow-sm focus:border-amber-500 focus:outline-none focus:ring-1 focus:ring-amber-500"
               placeholder="••••••••"
             />
           </div>
@@ -97,7 +99,7 @@ export default function LoginPage() {
           <button
             type="submit"
             disabled={loading}
-            className="w-full rounded-md bg-blue-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed"
+            className="w-full rounded-md bg-amber-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-amber-700 focus:outline-none focus:ring-2 focus:ring-amber-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
           >
             {loading ? 'Connexion...' : 'Se connecter'}
           </button>

@@ -34,25 +34,25 @@ export default function MySchedule() {
 
   return (
     <div className="space-y-6">
-      <h2 className="text-xl font-semibold text-gray-900">Mon planning</h2>
+      <h2 className="text-xl font-semibold text-stone-800">Mon planning</h2>
 
       {/* Week navigation */}
       <div className="flex items-center gap-2">
         <button
           onClick={() => setCurrentWeek((w) => addDays(w, -7))}
-          className="rounded-md border border-gray-300 px-3 py-1.5 text-sm text-gray-700 hover:bg-gray-50"
+          className="rounded-md border border-stone-300 px-3 py-1.5 text-sm text-stone-700 hover:bg-stone-50"
         >
           &larr; Semaine prec.
         </button>
         <button
           onClick={() => setCurrentWeek(new Date())}
-          className="rounded-md border border-gray-300 px-3 py-1.5 text-sm text-gray-700 hover:bg-gray-50"
+          className="rounded-md border border-stone-300 px-3 py-1.5 text-sm text-stone-700 hover:bg-stone-50"
         >
           Aujourd'hui
         </button>
         <button
           onClick={() => setCurrentWeek((w) => addDays(w, 7))}
-          className="rounded-md border border-gray-300 px-3 py-1.5 text-sm text-gray-700 hover:bg-gray-50"
+          className="rounded-md border border-stone-300 px-3 py-1.5 text-sm text-stone-700 hover:bg-stone-50"
         >
           Semaine suiv. &rarr;
         </button>
@@ -60,7 +60,7 @@ export default function MySchedule() {
 
       {isLoading ? (
         <div className="flex justify-center py-12">
-          <div className="h-8 w-8 animate-spin rounded-full border-4 border-blue-600 border-t-transparent" />
+          <div className="h-8 w-8 animate-spin rounded-full border-4 border-amber-500 border-t-transparent" />
         </div>
       ) : (
         <WeekCalendar
@@ -80,29 +80,29 @@ export default function MySchedule() {
           <div className="space-y-4">
             <div className="grid grid-cols-2 gap-3 text-sm">
               <div>
-                <span className="font-medium text-gray-500">Client</span>
+                <span className="font-medium text-stone-500">Client</span>
                 <p>{selectedAppointment.clientName ?? 'Sans client'}</p>
               </div>
               <div>
-                <span className="font-medium text-gray-500">Statut</span>
+                <span className="font-medium text-stone-500">Statut</span>
                 <p>{STATUS_LABELS[selectedAppointment.status]}</p>
               </div>
               <div>
-                <span className="font-medium text-gray-500">Debut</span>
+                <span className="font-medium text-stone-500">Debut</span>
                 <p>{formatTime(selectedAppointment.startTime)}</p>
               </div>
               <div>
-                <span className="font-medium text-gray-500">Fin</span>
+                <span className="font-medium text-stone-500">Fin</span>
                 <p>{formatTime(selectedAppointment.endTime)}</p>
               </div>
               <div>
-                <span className="font-medium text-gray-500">Total</span>
+                <span className="font-medium text-stone-500">Total</span>
                 <p>{formatPrice(selectedAppointment.totalPrice)}</p>
               </div>
             </div>
 
             <div>
-              <span className="text-sm font-medium text-gray-500">Prestations</span>
+              <span className="text-sm font-medium text-stone-500">Prestations</span>
               <ul className="mt-1 space-y-1">
                 {selectedAppointment.services.map((s) => (
                   <li key={s.serviceId} className="flex justify-between text-sm">
@@ -115,7 +115,7 @@ export default function MySchedule() {
 
             {selectedAppointment.notes && (
               <div>
-                <span className="text-sm font-medium text-gray-500">Notes</span>
+                <span className="text-sm font-medium text-stone-500">Notes</span>
                 <p className="text-sm">{selectedAppointment.notes}</p>
               </div>
             )}

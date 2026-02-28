@@ -53,10 +53,10 @@ export default function StaffPage() {
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <h2 className="text-xl font-semibold text-gray-900">Coiffeurs</h2>
+        <h2 className="text-xl font-semibold text-stone-800">Coiffeurs</h2>
         <button
           onClick={() => setIsCreateOpen(true)}
-          className="rounded-md bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700"
+          className="rounded-md bg-amber-600 px-4 py-2 text-sm font-medium text-white hover:bg-amber-700"
         >
           Ajouter un coiffeur
         </button>
@@ -72,7 +72,7 @@ export default function StaffPage() {
           <div className="flex gap-2 justify-end">
             <button
               onClick={() => setEditingStaff(s)}
-              className="text-blue-600 hover:text-blue-800 text-sm font-medium"
+              className="text-amber-600 hover:text-amber-700 text-sm font-medium"
             >
               Modifier
             </button>
@@ -90,17 +90,17 @@ export default function StaffPage() {
       <Modal isOpen={isCreateOpen} onClose={() => setIsCreateOpen(false)} title="Ajouter un coiffeur">
         <form onSubmit={handleCreate} className="space-y-4">
           <div className="grid grid-cols-2 gap-3">
-            <input name="firstName" required placeholder="Prenom *" className="rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500" />
-            <input name="lastName" required placeholder="Nom *" className="rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500" />
+            <input name="firstName" required placeholder="Prenom *" className="rounded-md border border-stone-300 px-3 py-2 text-sm focus:border-amber-500 focus:outline-none focus:ring-1 focus:ring-amber-500" />
+            <input name="lastName" required placeholder="Nom *" className="rounded-md border border-stone-300 px-3 py-2 text-sm focus:border-amber-500 focus:outline-none focus:ring-1 focus:ring-amber-500" />
           </div>
-          <input name="email" type="email" required placeholder="Email *" className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500" />
-          <input name="password" type="password" required minLength={8} placeholder="Mot de passe (min 8 car.) *" className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500" />
-          <input name="commissionRate" type="number" required min="0" max="100" step="0.01" placeholder="Taux de commission (%) *" className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500" />
+          <input name="email" type="email" required placeholder="Email *" className="w-full rounded-md border border-stone-300 px-3 py-2 text-sm focus:border-amber-500 focus:outline-none focus:ring-1 focus:ring-amber-500" />
+          <input name="password" type="password" required minLength={8} placeholder="Mot de passe (min 8 car.) *" className="w-full rounded-md border border-stone-300 px-3 py-2 text-sm focus:border-amber-500 focus:outline-none focus:ring-1 focus:ring-amber-500" />
+          <input name="commissionRate" type="number" required min="0" max="100" step="0.01" placeholder="Taux de commission (%) *" className="w-full rounded-md border border-stone-300 px-3 py-2 text-sm focus:border-amber-500 focus:outline-none focus:ring-1 focus:ring-amber-500" />
           <div className="flex justify-end gap-3 pt-2">
-            <button type="button" onClick={() => setIsCreateOpen(false)} className="rounded-md border border-gray-300 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50">
+            <button type="button" onClick={() => setIsCreateOpen(false)} className="rounded-md border border-stone-300 px-4 py-2 text-sm text-stone-700 hover:bg-stone-50">
               Annuler
             </button>
-            <button type="submit" disabled={createMutation.isPending} className="rounded-md bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 disabled:opacity-50">
+            <button type="submit" disabled={createMutation.isPending} className="rounded-md bg-amber-600 px-4 py-2 text-sm font-medium text-white hover:bg-amber-700 disabled:opacity-50">
               {createMutation.isPending ? 'Ajout...' : 'Ajouter'}
             </button>
           </div>
@@ -112,16 +112,16 @@ export default function StaffPage() {
         {editingStaff && (
           <form onSubmit={handleUpdate} className="space-y-4">
             <div className="grid grid-cols-2 gap-3">
-              <input name="firstName" required defaultValue={editingStaff.firstName} placeholder="Prenom *" className="rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500" />
-              <input name="lastName" required defaultValue={editingStaff.lastName} placeholder="Nom *" className="rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500" />
+              <input name="firstName" required defaultValue={editingStaff.firstName} placeholder="Prenom *" className="rounded-md border border-stone-300 px-3 py-2 text-sm focus:border-amber-500 focus:outline-none focus:ring-1 focus:ring-amber-500" />
+              <input name="lastName" required defaultValue={editingStaff.lastName} placeholder="Nom *" className="rounded-md border border-stone-300 px-3 py-2 text-sm focus:border-amber-500 focus:outline-none focus:ring-1 focus:ring-amber-500" />
             </div>
-            <p className="text-sm text-gray-500">Email : {editingStaff.email}</p>
-            <input name="commissionRate" type="number" required min="0" max="100" step="0.01" defaultValue={Number(editingStaff.commissionRate)} placeholder="Taux de commission (%) *" className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500" />
+            <p className="text-sm text-stone-500">Email : {editingStaff.email}</p>
+            <input name="commissionRate" type="number" required min="0" max="100" step="0.01" defaultValue={Number(editingStaff.commissionRate)} placeholder="Taux de commission (%) *" className="w-full rounded-md border border-stone-300 px-3 py-2 text-sm focus:border-amber-500 focus:outline-none focus:ring-1 focus:ring-amber-500" />
             <div className="flex justify-end gap-3 pt-2">
-              <button type="button" onClick={() => setEditingStaff(null)} className="rounded-md border border-gray-300 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50">
+              <button type="button" onClick={() => setEditingStaff(null)} className="rounded-md border border-stone-300 px-4 py-2 text-sm text-stone-700 hover:bg-stone-50">
                 Annuler
               </button>
-              <button type="submit" disabled={updateMutation.isPending} className="rounded-md bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 disabled:opacity-50">
+              <button type="submit" disabled={updateMutation.isPending} className="rounded-md bg-amber-600 px-4 py-2 text-sm font-medium text-white hover:bg-amber-700 disabled:opacity-50">
                 {updateMutation.isPending ? 'Sauvegarde...' : 'Sauvegarder'}
               </button>
             </div>

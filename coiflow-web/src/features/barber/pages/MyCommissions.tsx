@@ -33,28 +33,28 @@ export default function MyCommissions() {
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <h2 className="text-xl font-semibold text-gray-900">Mes commissions</h2>
+        <h2 className="text-xl font-semibold text-stone-800">Mes commissions</h2>
         <div className="flex items-center gap-2">
           <input
             type="date"
             value={startDate}
             onChange={(e) => setStartDate(e.target.value)}
-            className="rounded-md border border-gray-300 px-3 py-1.5 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+            className="rounded-md border border-stone-300 px-3 py-1.5 text-sm focus:border-amber-500 focus:outline-none focus:ring-1 focus:ring-amber-500"
           />
-          <span className="text-sm text-gray-500">au</span>
+          <span className="text-sm text-stone-500">au</span>
           <input
             type="date"
             value={endDate}
             onChange={(e) => setEndDate(e.target.value)}
-            className="rounded-md border border-gray-300 px-3 py-1.5 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+            className="rounded-md border border-stone-300 px-3 py-1.5 text-sm focus:border-amber-500 focus:outline-none focus:ring-1 focus:ring-amber-500"
           />
         </div>
       </div>
 
-      <div className="rounded-lg bg-blue-50 p-4 shadow">
-        <p className="text-sm font-medium text-blue-600">Total sur la periode</p>
-        <p className="mt-1 text-2xl font-semibold text-blue-900">{formatPrice(grandTotal)}</p>
-        <p className="text-xs text-blue-400">
+      <div className="rounded-lg bg-amber-50 p-4 shadow">
+        <p className="text-sm font-medium text-amber-600">Total sur la periode</p>
+        <p className="mt-1 text-2xl font-semibold text-amber-900">{formatPrice(grandTotal)}</p>
+        <p className="text-xs text-amber-400">
           {commissions.length} commission{commissions.length > 1 ? 's' : ''}
         </p>
       </div>
