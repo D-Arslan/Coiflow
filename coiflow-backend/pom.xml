@@ -95,6 +95,14 @@
             <optional>true</optional>
         </dependency>
 
+        <!-- DevTools (auto-restart on code changes) -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-devtools</artifactId>
+            <scope>runtime</scope>
+            <optional>true</optional>
+        </dependency>
+
         <!-- OpenAPI / Swagger -->
         <dependency>
             <groupId>org.springdoc</groupId>

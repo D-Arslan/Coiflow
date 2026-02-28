@@ -147,7 +147,30 @@ npx tsc --noEmit               # type check
 - IDs : UUID v4 (String "36 chars")
 - Pas de sessionStorage/localStorage pour l'auth (HttpOnly cookies uniquement)
 - Auth bootstrap : GET /api/auth/me au boot de l'app (204 = pas de session)
-- Clés RSA dev commitées pour commodité, clés prod injectées via env
+- Clés RSA dev dans `.gitignore` (jamais commitées), script `generate-keys.sh` fourni, clés prod injectées via env
+
+## Tests
+
+### Pattern de test (Mockito pur, pas de Spring context)
+- `@ExtendWith(MockitoExtension.class)` + `@Mock` repos + `@InjectMocks` service
+- `@BeforeEach` : `TenantContextHolder.setSalonId(SALON_ID)`
+- `@AfterEach` : `TenantContextHolder.clear()` + `SecurityContextHolder.clearContext()` (obligatoire, évite flaky tests ThreadLocal)
+- AssertJ pour les assertions, `ArgumentCaptor` pour vérifier les champs snapshot (commission, transaction)
+- `TestFixtures` : builders partagés (`aBarber()`, `aServiceItem()`, `anAppointment()`, `aTransaction()`, `aCommission()`)
+- `TestSecurityUtils` : helpers `setTenantContext()`, `clearAll()`, `mockSecurityContext()`
+
+### Couverture (74 tests, 9 services)
+| Service | Tests | Règles couvertes |
+|---------|-------|-----------------|
+| AppointmentService | 20 | Anti double-booking, state machine, tenant isolation, prix snapshot |
+| TransactionService | 16 | Paiement mixte, commission auto, arrondi HALF_UP, void idempotent |
+| AuthService | 8 | Login, rate limiting, refresh rotation, email normalization |
+| CommissionService | 6 | Role-based filtering (barber forcé à son propre ID) |
+| SalonService | 5 | CRUD + manager auto-créé, email unique |
+| StaffService | 5 | Soft delete, tenant isolation, commission rate |
+| ServiceCatalogService | 5 | Nom unique, soft delete, active only |
+| ClientService | 5 | Search, tenant isolation |
+| DashboardService | 4 | Revenue COMPLETED-only, zero-revenue days, statuts |
 
 ## État d'avancement
 
@@ -188,8 +211,18 @@ npx tsc --noEmit               # type check
 - [x] Fix console : /api/auth/me retourne 204 (pas 403/401), React Router future flags
 - [x] LoginPage : redirect auto si déjà authentifié
 
-### Sprint 5 — À planifier
-- [ ] Tests (unitaires + intégration)
+### Sprint 5 — Tests unitaires ✅
+- [x] Infrastructure de test : TestFixtures + TestSecurityUtils
+- [x] AppointmentServiceTest (20 tests) — double-booking, state machine, tenant isolation
+- [x] TransactionServiceTest (16 tests) — paiement mixte, commission auto, arrondi HALF_UP
+- [x] AuthServiceTest (8 tests) — login, rate limiting, refresh token rotation
+- [x] CRUD tests : Salon (5), Staff (5), ServiceCatalog (5), Client (5)
+- [x] CommissionServiceTest (6) + DashboardServiceTest (4)
+- [x] `mvn test` → 74 tests, 0 failures (~3s)
+
+### Sprint 6 — À planifier
+- [ ] Tests d'intégration (@DataJpaTest, @SpringBootTest)
 - [ ] Configuration PostgreSQL production
-- [ ] Déploiement (Docker, CI/CD)
-- [ ] Fonctionnalités supplémentaires à définir
+- [ ] Docker (Dockerfile backend + frontend)
+- [ ] CI/CD (GitHub Actions)
+- [ ] Design / UI polish (couleurs, thème)
