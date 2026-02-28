@@ -128,7 +128,8 @@ npx tsc --noEmit               # type check
 - Admin : `admin@coiflow.com` / `admin123`
 
 ## Règles métier importantes
-- **Anti double-booking** : validation overlap dans AppointmentService + index DB
+- **Anti double-booking** : validation overlap dans AppointmentService + index DB (exclut CANCELLED/NO_SHOW)
+- **Reschedule** : PATCH `/api/appointments/{id}/reschedule` — uniquement SCHEDULED, vérifie overlap (self-exclusion), interdit dans le passé
 - **Paiement mixte** : sum(payments) == sum(services), validation stricte
 - **Prix historisé** : price_applied figé dans appointment_services
 - **Soft delete** : champ `active` (boolean), jamais de DELETE physique
@@ -140,6 +141,7 @@ npx tsc --noEmit               # type check
 ## Pièges connus
 - **Hibernate STI proxy** : `appointment.getBarber()` retourne un proxy `Utilisateur`, pas `Barber`. Utiliser `Hibernate.unproxy()` avant le cast.
 - **Admin sans salonId** : les endpoints tenant-scoped retournent 409 pour un admin (pas de salon). C'est voulu.
+- **WeekCalendar overlap layout** : les blocs CANCELLED/NO_SHOW sont exclus du calcul de colonnes (`layoutBlocks`) et rendus en pleine largeur derrière (opacity-40, pointer-events-none). Seuls les blocs actifs se partagent les colonnes côte à côte.
 
 ## Conventions
 - Backend : snake_case (BDD), camelCase (Java/JSON)
@@ -195,7 +197,7 @@ npx tsc --noEmit               # type check
 
 ### Sprint 3 — Coeur métier ✅
 - [x] Module Rendez-vous (CRUD + statuts + anti double-booking)
-- [x] Planning calendrier WeekCalendar (vue semaine, 8h-20h, slots 30min)
+- [x] Planning calendrier WeekCalendar (vue semaine, 0h-24h, slots 30min, scroll auto 8h)
 - [x] Module Transactions (encaissement + paiement mixte + validation stricte)
 - [x] Calcul auto commissions (TransactionService → Commission)
 - [x] Pages : AppointmentsPage, TransactionsPage, CommissionsPage
@@ -220,9 +222,17 @@ npx tsc --noEmit               # type check
 - [x] CommissionServiceTest (6) + DashboardServiceTest (4)
 - [x] `mvn test` → 74 tests, 0 failures (~3s)
 
-### Sprint 6 — À planifier
+### Sprint 6 — UI & Calendrier avancé ✅
+- [x] Design UI : palette amber/stone, police Inter, icônes Lucide React
+- [x] WeekCalendar : heures 0h-24h, scroll auto vers 8h, bouton "08:00"
+- [x] WeekCalendar : layout côte à côte pour RDV simultanés (multi-coiffeurs)
+- [x] WeekCalendar : RDV chevauchant minuit rendus sur 2 jours
+- [x] Fix : créneaux CANCELLED/NO_SHOW cliquables pour nouvelle réservation (pointer-events-none)
+- [x] Reschedule RDV : backend (PATCH endpoint + overlap self-exclusion) + frontend (modale déplacer)
+- [x] Fix : retrait step="1800" sur inputs time (création + déplacement)
+
+### Sprint 7 — À planifier
 - [ ] Tests d'intégration (@DataJpaTest, @SpringBootTest)
 - [ ] Configuration PostgreSQL production
 - [ ] Docker (Dockerfile backend + frontend)
 - [ ] CI/CD (GitHub Actions)
-- [ ] Design / UI polish (couleurs, thème)

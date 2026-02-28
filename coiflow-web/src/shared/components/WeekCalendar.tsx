@@ -24,6 +24,77 @@ interface CalendarBlock {
   heightMinutes: number;
 }
 
+interface LayoutBlock extends CalendarBlock {
+  column: number;
+  totalColumns: number;
+}
+
+/**
+ * Assigns column positions to overlapping blocks so they render side-by-side.
+ * Blocks that don't overlap keep full width.
+ */
+function layoutBlocks(blocks: CalendarBlock[]): LayoutBlock[] {
+  if (blocks.length === 0) return [];
+
+  // Sort by start time, then by duration descending (wider blocks first)
+  const sorted = [...blocks].sort((a, b) => a.topMinutes - b.topMinutes || b.heightMinutes - a.heightMinutes);
+
+  // Assign columns greedily
+  const placed: LayoutBlock[] = sorted.map((b) => ({ ...b, column: 0, totalColumns: 1 }));
+  // Track end time per column
+  const columnEnds: number[] = [];
+
+  for (const block of placed) {
+    const endMinutes = block.topMinutes + block.heightMinutes;
+    // Find first column where block fits (no overlap)
+    let col = 0;
+    while (col < columnEnds.length && columnEnds[col] > block.topMinutes) {
+      col++;
+    }
+    block.column = col;
+    columnEnds[col] = endMinutes;
+  }
+
+  // Find overlap clusters and set totalColumns for each cluster
+  // Two blocks are in the same cluster if they overlap directly or transitively
+  const n = placed.length;
+  const clusterIds = new Array<number>(n).fill(-1);
+  let clusterId = 0;
+
+  for (let i = 0; i < n; i++) {
+    if (clusterIds[i] !== -1) continue;
+    // BFS/DFS to find all blocks overlapping with this one
+    const stack = [i];
+    clusterIds[i] = clusterId;
+    while (stack.length > 0) {
+      const cur = stack.pop()!;
+      const curEnd = placed[cur].topMinutes + placed[cur].heightMinutes;
+      for (let j = 0; j < n; j++) {
+        if (clusterIds[j] !== -1) continue;
+        const jEnd = placed[j].topMinutes + placed[j].heightMinutes;
+        // Check overlap
+        if (placed[j].topMinutes < curEnd && jEnd > placed[cur].topMinutes) {
+          clusterIds[j] = clusterId;
+          stack.push(j);
+        }
+      }
+    }
+    clusterId++;
+  }
+
+  // For each cluster, find max column used
+  const clusterMaxCol = new Map<number, number>();
+  for (let i = 0; i < n; i++) {
+    const cid = clusterIds[i];
+    clusterMaxCol.set(cid, Math.max(clusterMaxCol.get(cid) ?? 0, placed[i].column));
+  }
+  for (let i = 0; i < n; i++) {
+    placed[i].totalColumns = (clusterMaxCol.get(clusterIds[i]) ?? 0) + 1;
+  }
+
+  return placed;
+}
+
 interface WeekCalendarProps {
   appointments: Appointment[];
   weekDays: Date[];
@@ -51,9 +122,9 @@ export function WeekCalendar({ appointments, weekDays, onSlotClick, onAppointmen
   }, []);
 
   const blocksByDay = useMemo(() => {
-    const map = new Map<string, CalendarBlock[]>();
+    const rawMap = new Map<string, CalendarBlock[]>();
     for (const day of weekDays) {
-      map.set(formatDateISO(day), []);
+      rawMap.set(formatDateISO(day), []);
     }
 
     for (const apt of appointments) {
@@ -62,7 +133,7 @@ export function WeekCalendar({ appointments, weekDays, onSlotClick, onAppointmen
 
       for (const day of weekDays) {
         const dayKey = formatDateISO(day);
-        const blocks = map.get(dayKey);
+        const blocks = rawMap.get(dayKey);
         if (!blocks) continue;
 
         if (isSameDay(startDate, day)) {
@@ -90,6 +161,17 @@ export function WeekCalendar({ appointments, weekDays, onSlotClick, onAppointmen
           }
         }
       }
+    }
+
+    // Apply overlap layout per day — only active blocks get columns,
+    // inactive (CANCELLED/NO_SHOW) render full-width behind
+    const map = new Map<string, LayoutBlock[]>();
+    for (const [dayKey, blocks] of rawMap) {
+      const active = blocks.filter((b) => !INACTIVE_STATUSES.includes(b.appointment.status));
+      const inactive: LayoutBlock[] = blocks
+        .filter((b) => INACTIVE_STATUSES.includes(b.appointment.status))
+        .map((b) => ({ ...b, column: 0, totalColumns: 1 }));
+      map.set(dayKey, [...inactive, ...layoutBlocks(active)]);
     }
     return map;
   }, [appointments, weekDays]);
@@ -176,16 +258,18 @@ export function WeekCalendar({ appointments, weekDays, onSlotClick, onAppointmen
 
                   {/* Appointment blocks */}
                   {dayBlocks.map((block) => {
-                    const { appointment: apt, topMinutes, heightMinutes } = block;
+                    const { appointment: apt, topMinutes, heightMinutes, column, totalColumns } = block;
                     const top = minutesToPx(topMinutes);
                     const height = Math.max(minutesToPx(heightMinutes), SLOT_HEIGHT / 2);
                     const isInactive = INACTIVE_STATUSES.includes(apt.status);
+                    const widthPercent = 100 / totalColumns;
+                    const leftPercent = column * widthPercent;
 
                     return (
                       <div
                         key={`${apt.id}-${topMinutes}`}
-                        className={`absolute left-0.5 right-0.5 overflow-hidden rounded border px-1 py-0.5 text-xs ${STATUS_COLORS[apt.status]} ${isInactive ? 'opacity-40' : 'cursor-pointer'}`}
-                        style={{ top, height }}
+                        className={`absolute overflow-hidden rounded border px-1 py-0.5 text-xs ${STATUS_COLORS[apt.status]} ${isInactive ? 'opacity-40 pointer-events-none' : 'cursor-pointer'}`}
+                        style={{ top, height, left: `calc(${leftPercent}% + 2px)`, width: `calc(${widthPercent}% - 4px)` }}
                         onClick={(e) => {
                           if (isInactive) return;
                           e.stopPropagation();

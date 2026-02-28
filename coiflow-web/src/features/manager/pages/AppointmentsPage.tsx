@@ -273,7 +273,6 @@ export default function AppointmentsPage() {
                 type="time"
                 required
                 defaultValue={createDefaults.time}
-                step="1800"
                 className="w-full rounded-md border border-stone-300 px-3 py-2 text-sm focus:border-amber-500 focus:outline-none focus:ring-1 focus:ring-amber-500"
               />
             </div>
@@ -444,7 +443,6 @@ export default function AppointmentsPage() {
                   type="time"
                   required
                   defaultValue={selectedAppointment.startTime.split('T')[1]?.slice(0, 5)}
-                  step="1800"
                   className="w-full rounded-md border border-stone-300 px-3 py-2 text-sm focus:border-amber-500 focus:outline-none focus:ring-1 focus:ring-amber-500"
                 />
               </div>
