@@ -29,3 +29,8 @@ export interface CreateAppointmentPayload {
   serviceIds: string[];
   notes?: string;
 }
+
+export interface ReschedulePayload {
+  startTime: string;
+  barberId?: string;
+}

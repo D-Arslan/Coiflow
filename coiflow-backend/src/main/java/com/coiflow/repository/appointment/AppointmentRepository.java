@@ -34,6 +34,22 @@ public interface AppointmentRepository extends JpaRepository<Appointment, String
             @Param("newStart") LocalDateTime newStart,
             @Param("newEnd") LocalDateTime newEnd);
 
+    @Lock(LockModeType.PESSIMISTIC_WRITE)
+    @Query("""
+        SELECT a FROM Appointment a
+        WHERE a.barber.id = :barberId
+          AND a.id <> :excludeId
+          AND a.status <> com.coiflow.model.enums.AppointmentStatus.CANCELLED
+          AND a.status <> com.coiflow.model.enums.AppointmentStatus.NO_SHOW
+          AND a.startTime < :newEnd
+          AND a.endTime > :newStart
+        """)
+    List<Appointment> findOverlappingForUpdateExcluding(
+            @Param("barberId") String barberId,
+            @Param("excludeId") String excludeId,
+            @Param("newStart") LocalDateTime newStart,
+            @Param("newEnd") LocalDateTime newEnd);
+
     @Query("""
         SELECT a FROM Appointment a
         WHERE a.salon.id = :salonId

@@ -185,6 +185,54 @@ public class AppointmentService {
         return toResponse(appointmentRepository.save(a));
     }
 
+    @Transactional
+    @PreAuthorize("hasRole('MANAGER')")
+    public AppointmentResponse reschedule(String id, RescheduleRequest request) {
+        String salonId = requireSalonId();
+        Appointment a = appointmentRepository.findByIdAndSalonId(id, salonId)
+                .orElseThrow(() -> new ResourceNotFoundException("Rendez-vous introuvable"));
+
+        // Only SCHEDULED appointments can be rescheduled
+        if (a.getStatus() != AppointmentStatus.SCHEDULED) {
+            throw new BusinessException("INVALID_RESCHEDULE",
+                    "Seuls les rendez-vous planifies peuvent etre deplaces");
+        }
+
+        // Cannot reschedule to the past
+        if (request.getStartTime().isBefore(LocalDateTime.now())) {
+            throw new BusinessException("INVALID_RESCHEDULE",
+                    "Impossible de deplacer un rendez-vous dans le passe");
+        }
+
+        // Resolve barber (keep current or switch)
+        Utilisateur barber = a.getBarber();
+        if (request.getBarberId() != null && !request.getBarberId().isBlank()
+                && !request.getBarberId().equals(barber.getId())) {
+            barber = utilisateurRepository.findByIdAndType(request.getBarberId(), Barber.class)
+                    .filter(b -> salonId.equals(b.getSalonId()))
+                    .orElseThrow(() -> new ResourceNotFoundException("Coiffeur introuvable"));
+        }
+
+        // Calculate new endTime from existing services
+        int totalDuration = a.getServices().stream()
+                .mapToInt(si -> si.getService().getDurationMinutes())
+                .sum();
+        LocalDateTime newEnd = request.getStartTime().plusMinutes(totalDuration);
+
+        // Check overlap at new slot (exclude self)
+        List<Appointment> overlapping = appointmentRepository.findOverlappingForUpdateExcluding(
+                barber.getId(), a.getId(), request.getStartTime(), newEnd);
+        if (!overlapping.isEmpty()) {
+            throw new BusinessException("APPOINTMENT_OVERLAP",
+                    "Ce creneau est deja occupe pour ce coiffeur");
+        }
+
+        a.setStartTime(request.getStartTime());
+        a.setEndTime(newEnd);
+        a.setBarber(barber);
+        return toResponse(appointmentRepository.save(a));
+    }
+
     private AppointmentResponse toResponse(Appointment a) {
         List<ServiceLineResponse> serviceLines = a.getServices().stream()
                 .map(si -> ServiceLineResponse.builder()

@@ -1,6 +1,6 @@
 import axiosClient from '@/shared/api/axiosClient';
 import { API_ENDPOINTS } from '@/config/api';
-import type { Appointment, CreateAppointmentPayload, AppointmentStatus } from '@/shared/types/appointment';
+import type { Appointment, CreateAppointmentPayload, ReschedulePayload, AppointmentStatus } from '@/shared/types/appointment';
 
 export const AppointmentService = {
   async getAll(start: string, end: string, barberId?: string): Promise<Appointment[]> {
@@ -29,6 +29,11 @@ export const AppointmentService = {
 
   async updateStatus(id: string, status: AppointmentStatus): Promise<Appointment> {
     const response = await axiosClient.patch<Appointment>(`${API_ENDPOINTS.APPOINTMENTS}/${id}/status`, { status });
+    return response.data;
+  },
+
+  async reschedule(id: string, payload: ReschedulePayload): Promise<Appointment> {
+    const response = await axiosClient.patch<Appointment>(`${API_ENDPOINTS.APPOINTMENTS}/${id}/reschedule`, payload);
     return response.data;
   },
 };

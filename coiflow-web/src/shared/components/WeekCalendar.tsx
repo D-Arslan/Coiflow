@@ -1,19 +1,28 @@
-import { useMemo } from 'react';
+import { useMemo, useRef, useEffect } from 'react';
 import type { Appointment, AppointmentStatus } from '@/shared/types/appointment';
-import { formatTime, isSameDay, getDayName, formatDateISO } from '@/shared/utils/dateHelpers';
+import { formatTime, isSameDay, getDayName, formatDateISO, addDays } from '@/shared/utils/dateHelpers';
 
-const HOUR_START = 8;
-const HOUR_END = 20;
+const HOUR_START = 0;
+const HOUR_END = 24;
 const SLOT_HEIGHT = 48; // px per 30min slot
 const TOTAL_SLOTS = (HOUR_END - HOUR_START) * 2;
+const DEFAULT_SCROLL_HOUR = 8;
 
 const STATUS_COLORS: Record<AppointmentStatus, string> = {
-  SCHEDULED: 'bg-green-200 border-green-400 text-green-900',
-  IN_PROGRESS: 'bg-blue-200 border-blue-400 text-blue-900',
-  COMPLETED: 'bg-gray-200 border-gray-400 text-gray-700',
+  SCHEDULED: 'bg-amber-200 border-amber-400 text-amber-900',
+  IN_PROGRESS: 'bg-sky-200 border-sky-400 text-sky-900',
+  COMPLETED: 'bg-emerald-200 border-emerald-400 text-emerald-800',
   CANCELLED: 'bg-red-200 border-red-400 text-red-900',
-  NO_SHOW: 'bg-orange-200 border-orange-400 text-orange-900',
+  NO_SHOW: 'bg-stone-300 border-stone-400 text-stone-700',
 };
+
+const INACTIVE_STATUSES: AppointmentStatus[] = ['CANCELLED', 'NO_SHOW'];
+
+interface CalendarBlock {
+  appointment: Appointment;
+  topMinutes: number;
+  heightMinutes: number;
+}
 
 interface WeekCalendarProps {
   appointments: Appointment[];
@@ -22,26 +31,17 @@ interface WeekCalendarProps {
   onAppointmentClick?: (appointment: Appointment) => void;
 }
 
-function getSlotPosition(dateStr: string): { top: number; height: number } | null {
-  const date = new Date(dateStr);
-  const hours = date.getHours();
-  const minutes = date.getMinutes();
-  if (hours < HOUR_START || hours >= HOUR_END) return null;
-  const slotsFromTop = (hours - HOUR_START) * 2 + minutes / 30;
-  return { top: slotsFromTop * SLOT_HEIGHT, height: 0 };
-}
-
-function getBlockStyle(appointment: Appointment): { top: number; height: number } | null {
-  const startPos = getSlotPosition(appointment.startTime);
-  if (!startPos) return null;
-  const startDate = new Date(appointment.startTime);
-  const endDate = new Date(appointment.endTime);
-  const durationMinutes = (endDate.getTime() - startDate.getTime()) / 60_000;
-  const height = Math.max((durationMinutes / 30) * SLOT_HEIGHT, SLOT_HEIGHT / 2);
-  return { top: startPos.top, height };
+function minutesToPx(minutes: number): number {
+  return (minutes / 30) * SLOT_HEIGHT;
 }
 
 export function WeekCalendar({ appointments, weekDays, onSlotClick, onAppointmentClick }: WeekCalendarProps) {
+  const scrollRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    scrollRef.current?.scrollTo({ top: DEFAULT_SCROLL_HOUR * 2 * SLOT_HEIGHT });
+  }, []);
+
   const hours = useMemo(() => {
     const h: string[] = [];
     for (let i = HOUR_START; i < HOUR_END; i++) {
@@ -50,19 +50,44 @@ export function WeekCalendar({ appointments, weekDays, onSlotClick, onAppointmen
     return h;
   }, []);
 
-  const appointmentsByDay = useMemo(() => {
-    const map = new Map<string, Appointment[]>();
+  const blocksByDay = useMemo(() => {
+    const map = new Map<string, CalendarBlock[]>();
     for (const day of weekDays) {
-      const key = formatDateISO(day);
-      map.set(key, []);
+      map.set(formatDateISO(day), []);
     }
+
     for (const apt of appointments) {
-      const aptDate = new Date(apt.startTime);
+      const startDate = new Date(apt.startTime);
+      const endDate = new Date(apt.endTime);
+
       for (const day of weekDays) {
-        if (isSameDay(aptDate, day)) {
-          const key = formatDateISO(day);
-          map.get(key)!.push(apt);
-          break;
+        const dayKey = formatDateISO(day);
+        const blocks = map.get(dayKey);
+        if (!blocks) continue;
+
+        if (isSameDay(startDate, day)) {
+          if (isSameDay(endDate, day) || (endDate.getHours() === 0 && endDate.getMinutes() === 0 && isSameDay(addDays(day, 1), endDate))) {
+            // Same-day or ends exactly at midnight
+            const topMinutes = startDate.getHours() * 60 + startDate.getMinutes();
+            const heightMinutes = (endDate.getTime() - startDate.getTime()) / 60_000;
+            blocks.push({ appointment: apt, topMinutes, heightMinutes: Math.max(heightMinutes, 15) });
+          } else {
+            // Starts today, ends tomorrow: render from startTime to midnight
+            const topMinutes = startDate.getHours() * 60 + startDate.getMinutes();
+            const heightMinutes = 24 * 60 - topMinutes;
+            if (heightMinutes > 0) {
+              blocks.push({ appointment: apt, topMinutes, heightMinutes });
+            }
+          }
+        } else {
+          // Check if appointment spills into this day from the previous day
+          const prevDay = addDays(day, -1);
+          if (isSameDay(startDate, prevDay) && isSameDay(endDate, day)) {
+            const heightMinutes = endDate.getHours() * 60 + endDate.getMinutes();
+            if (heightMinutes > 0) {
+              blocks.push({ appointment: apt, topMinutes: 0, heightMinutes });
+            }
+          }
         }
       }
     }
@@ -71,18 +96,31 @@ export function WeekCalendar({ appointments, weekDays, onSlotClick, onAppointmen
 
   const totalHeight = TOTAL_SLOTS * SLOT_HEIGHT;
 
+  const scrollToHour = (hour: number) => {
+    scrollRef.current?.scrollTo({ top: hour * 2 * SLOT_HEIGHT, behavior: 'smooth' });
+  };
+
   return (
-    <div className="overflow-x-auto rounded-lg border border-gray-200 bg-white">
+    <div className="overflow-x-auto rounded-lg border border-stone-200 bg-white">
       <div className="min-w-[800px]">
-        {/* Header row */}
-        <div className="grid border-b border-gray-200" style={{ gridTemplateColumns: '60px repeat(7, 1fr)' }}>
-          <div className="border-r border-gray-200 p-2" />
+        {/* Header row — outside scroll */}
+        <div className="grid border-b border-stone-200" style={{ gridTemplateColumns: '60px repeat(7, 1fr)' }}>
+          <div className="border-r border-stone-200 p-2 flex items-center justify-center">
+            <button
+              type="button"
+              onClick={() => scrollToHour(DEFAULT_SCROLL_HOUR)}
+              className="text-[10px] text-stone-400 hover:text-amber-600 transition-colors"
+              title="Revenir a 08:00"
+            >
+              08:00
+            </button>
+          </div>
           {weekDays.map((day) => {
             const isToday = isSameDay(day, new Date());
             return (
               <div
                 key={formatDateISO(day)}
-                className={`border-r border-gray-200 p-2 text-center text-sm font-medium last:border-r-0 ${isToday ? 'bg-blue-50 text-blue-700' : 'text-gray-700'}`}
+                className={`border-r border-stone-200 p-2 text-center text-sm font-medium last:border-r-0 ${isToday ? 'bg-amber-50 text-amber-700' : 'text-stone-700'}`}
               >
                 <div>{getDayName(day)}</div>
                 <div className={`text-lg ${isToday ? 'font-bold' : ''}`}>{day.getDate()}</div>
@@ -91,75 +129,82 @@ export function WeekCalendar({ appointments, weekDays, onSlotClick, onAppointmen
           })}
         </div>
 
-        {/* Body */}
-        <div className="grid" style={{ gridTemplateColumns: '60px repeat(7, 1fr)' }}>
-          {/* Time column */}
-          <div className="relative border-r border-gray-200" style={{ height: totalHeight }}>
-            {hours.map((label, i) => (
-              <div
-                key={label}
-                className="absolute left-0 right-0 border-b border-gray-100 px-1 text-xs text-gray-400"
-                style={{ top: i * SLOT_HEIGHT * 2, height: SLOT_HEIGHT * 2 }}
-              >
-                {label}
-              </div>
-            ))}
-          </div>
+        {/* Scrollable body */}
+        <div ref={scrollRef} className="overflow-y-auto max-h-[700px]">
+          <div className="grid" style={{ gridTemplateColumns: '60px repeat(7, 1fr)' }}>
+            {/* Time column */}
+            <div className="relative border-r border-stone-200" style={{ height: totalHeight }}>
+              {hours.map((label, i) => (
+                <div
+                  key={label}
+                  className="absolute left-0 right-0 border-b border-stone-100 px-1 text-xs text-stone-400"
+                  style={{ top: i * SLOT_HEIGHT * 2, height: SLOT_HEIGHT * 2 }}
+                >
+                  {label}
+                </div>
+              ))}
+            </div>
 
-          {/* Day columns */}
-          {weekDays.map((day) => {
-            const key = formatDateISO(day);
-            const dayAppointments = appointmentsByDay.get(key) ?? [];
-            return (
-              <div
-                key={key}
-                className="relative border-r border-gray-200 last:border-r-0"
-                style={{ height: totalHeight }}
-              >
-                {/* Grid lines */}
-                {hours.map((label, i) => (
-                  <div
-                    key={label}
-                    className="absolute left-0 right-0 border-b border-gray-100 cursor-pointer hover:bg-gray-50"
-                    style={{ top: i * SLOT_HEIGHT * 2, height: SLOT_HEIGHT }}
-                    onClick={() => onSlotClick?.(day, HOUR_START + i, 0)}
-                  />
-                ))}
-                {hours.map((label, i) => (
-                  <div
-                    key={`${label}-30`}
-                    className="absolute left-0 right-0 border-b border-gray-50 cursor-pointer hover:bg-gray-50"
-                    style={{ top: i * SLOT_HEIGHT * 2 + SLOT_HEIGHT, height: SLOT_HEIGHT }}
-                    onClick={() => onSlotClick?.(day, HOUR_START + i, 30)}
-                  />
-                ))}
-
-                {/* Appointments */}
-                {dayAppointments.map((apt) => {
-                  const style = getBlockStyle(apt);
-                  if (!style) return null;
-                  return (
+            {/* Day columns */}
+            {weekDays.map((day) => {
+              const dayKey = formatDateISO(day);
+              const dayBlocks = blocksByDay.get(dayKey) ?? [];
+              return (
+                <div
+                  key={dayKey}
+                  className="relative border-r border-stone-200 last:border-r-0"
+                  style={{ height: totalHeight }}
+                >
+                  {/* Grid lines — full hour */}
+                  {hours.map((label, i) => (
                     <div
-                      key={apt.id}
-                      className={`absolute left-0.5 right-0.5 cursor-pointer overflow-hidden rounded border px-1 py-0.5 text-xs ${STATUS_COLORS[apt.status]}`}
-                      style={{ top: style.top, height: style.height }}
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        onAppointmentClick?.(apt);
-                      }}
-                    >
-                      <div className="font-medium truncate">
-                        {formatTime(apt.startTime)} - {apt.clientName ?? 'Sans client'}
+                      key={label}
+                      className="absolute left-0 right-0 border-b border-stone-100 cursor-pointer hover:bg-amber-50/30"
+                      style={{ top: i * SLOT_HEIGHT * 2, height: SLOT_HEIGHT }}
+                      onClick={() => onSlotClick?.(day, HOUR_START + i, 0)}
+                    />
+                  ))}
+                  {/* Grid lines — half hour */}
+                  {hours.map((label, i) => (
+                    <div
+                      key={`${label}-30`}
+                      className="absolute left-0 right-0 border-b border-stone-50 cursor-pointer hover:bg-amber-50/30"
+                      style={{ top: i * SLOT_HEIGHT * 2 + SLOT_HEIGHT, height: SLOT_HEIGHT }}
+                      onClick={() => onSlotClick?.(day, HOUR_START + i, 30)}
+                    />
+                  ))}
+
+                  {/* Appointment blocks */}
+                  {dayBlocks.map((block) => {
+                    const { appointment: apt, topMinutes, heightMinutes } = block;
+                    const top = minutesToPx(topMinutes);
+                    const height = Math.max(minutesToPx(heightMinutes), SLOT_HEIGHT / 2);
+                    const isInactive = INACTIVE_STATUSES.includes(apt.status);
+
+                    return (
+                      <div
+                        key={`${apt.id}-${topMinutes}`}
+                        className={`absolute left-0.5 right-0.5 overflow-hidden rounded border px-1 py-0.5 text-xs ${STATUS_COLORS[apt.status]} ${isInactive ? 'opacity-40' : 'cursor-pointer'}`}
+                        style={{ top, height }}
+                        onClick={(e) => {
+                          if (isInactive) return;
+                          e.stopPropagation();
+                          onAppointmentClick?.(apt);
+                        }}
+                      >
+                        <div className={`font-medium truncate ${isInactive ? 'line-through' : ''}`}>
+                          {formatTime(apt.startTime)} - {apt.clientName ?? 'Sans client'}
+                        </div>
+                        {height > SLOT_HEIGHT && (
+                          <div className="truncate text-[10px] opacity-80">{apt.barberName}</div>
+                        )}
                       </div>
-                      {style.height > SLOT_HEIGHT && (
-                        <div className="truncate text-[10px] opacity-80">{apt.barberName}</div>
-                      )}
-                    </div>
-                  );
-                })}
-              </div>
-            );
-          })}
+                    );
+                  })}
+                </div>
+              );
+            })}
+          </div>
         </div>
       </div>
     </div>

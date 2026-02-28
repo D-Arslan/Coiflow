@@ -2,6 +2,7 @@ package com.coiflow.controller.appointment;
 
 import com.coiflow.dto.appointment.AppointmentResponse;
 import com.coiflow.dto.appointment.CreateAppointmentRequest;
+import com.coiflow.dto.appointment.RescheduleRequest;
 import com.coiflow.dto.appointment.UpdateStatusRequest;
 import com.coiflow.service.appointment.AppointmentService;
 import jakarta.validation.Valid;
@@ -51,5 +52,12 @@ public class AppointmentController {
             @PathVariable String id,
             @Valid @RequestBody UpdateStatusRequest request) {
         return ResponseEntity.ok(appointmentService.updateStatus(id, request.getStatus()));
+    }
+
+    @PatchMapping("/{id}/reschedule")
+    public ResponseEntity<AppointmentResponse> reschedule(
+            @PathVariable String id,
+            @Valid @RequestBody RescheduleRequest request) {
+        return ResponseEntity.ok(appointmentService.reschedule(id, request));
     }
 }

@@ -2,7 +2,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'react-toastify';
 import { AppointmentService } from '@/shared/services/AppointmentService';
 import { extractErrorMessage } from '@/shared/utils/errorMessage';
-import type { CreateAppointmentPayload, AppointmentStatus } from '@/shared/types/appointment';
+import type { CreateAppointmentPayload, ReschedulePayload, AppointmentStatus } from '@/shared/types/appointment';
 
 const APPOINTMENTS_KEY = ['appointments'];
 
@@ -27,6 +27,21 @@ export function useCreateAppointment() {
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: APPOINTMENTS_KEY });
       toast.success('Rendez-vous cree avec succes');
+    },
+    onError: (err: unknown) => {
+      toast.error(extractErrorMessage(err));
+    },
+  });
+}
+
+export function useRescheduleAppointment() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, payload }: { id: string; payload: ReschedulePayload }) =>
+      AppointmentService.reschedule(id, payload),
+    onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: APPOINTMENTS_KEY });
+      toast.success('Rendez-vous deplace avec succes');
     },
     onError: (err: unknown) => {
       toast.error(extractErrorMessage(err));
